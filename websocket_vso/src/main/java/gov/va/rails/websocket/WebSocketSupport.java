@@ -49,7 +49,7 @@ public class WebSocketSupport {
     @OnClose
     public void end() {
         connections.remove(this);
-        websocketRemovedNotifier.notifyObservers();
+        websocketRemovedNotifier.notifyObservers(this);
         log.debug("WebSocketSupport session ended! ");
         System.out.println("WebSocketSupport session ended! ");
     }
@@ -110,7 +110,13 @@ public class WebSocketSupport {
         websocketRemovedNotifier.notifyObservers();
     }
 
-    public static void broadcast(String msg) {
+    /**
+     * Broadcasts to all websockets on the endpoint.
+     * @param msg the msg to broadcast, usually in JSON
+     * @return the number of websockets removed from tracking due to a lack of reachability.
+     */
+    public static int broadcast(String msg) {
+    	int removed = 0;
         for (WebSocketSupport client : connections) {
             try {
                 synchronized (client) {
@@ -121,6 +127,7 @@ public class WebSocketSupport {
                 System.out.println("WebSocketSupport Error: Failed to send message to client");
                 e.printStackTrace();
                 connections.remove(client);
+                removed++;
                 websocketRemovedNotifier.notifyObservers();
                 try {
                     client.session.close();
@@ -130,6 +137,7 @@ public class WebSocketSupport {
                 //If the day comes here is where we notify the world of a client leaving
             }
         }
+        return removed;
     }
     
     public static IncomingMessageObserver getMessageNotifier() {
@@ -162,9 +170,9 @@ public class WebSocketSupport {
 	public static class WebSocketRemovedObserver extends Observable {
     	
 		@Override
-		public void notifyObservers() {
+		public void notifyObservers(Object o) {
     		setChanged();
-    		super.notifyObservers();
+    		super.notifyObservers(o);
     		System.out.println("WebSocketRemovedObserver notified!");
     	}
     }
