@@ -19,7 +19,7 @@ import org.apache.juli.logging.LogFactory;
 public class WebSocketSupport {
 	
 	static{
-		System.out.println("Rails has WebSocketSupport at: " + WebSocketSupport.END_POINT);
+		System.out.println("Rails has WebSocketSupport at:: " + WebSocketSupport.END_POINT);
 	}
 
 	public static final String END_POINT = "/websocket/rails"; 
