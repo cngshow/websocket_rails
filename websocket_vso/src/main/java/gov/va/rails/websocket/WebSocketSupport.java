@@ -2,6 +2,7 @@ package gov.va.rails.websocket;
 
 import java.io.IOException;
 import java.util.Observable;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -12,28 +13,24 @@ import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
-
 @ServerEndpoint(value = WebSocketSupport.END_POINT)
 public class WebSocketSupport {
 	
 	static{
-		System.out.println("Rails has WebSocketSupport at:: " + WebSocketSupport.END_POINT);
+		System.out.println("Rails has WebSocketSupport at: " + WebSocketSupport.END_POINT);
 	}
 
 	public static final String END_POINT = "/websocket/rails"; 
 	
-    private static final Log log = LogFactory.getLog(WebSocketSupport.class);
+    private static Optional<RailsLogging> log = Optional.empty();
 
-    private static final Set<WebSocketSupport> connections =
-            new CopyOnWriteArraySet<>();
+    private static final Set<WebSocketSupport> connections = new CopyOnWriteArraySet<>();
     
     private static final IncomingMessageObserver messageNotifier = new IncomingMessageObserver();
     private static final WebSocketRemovedObserver websocketRemovedNotifier = new WebSocketRemovedObserver();
 
 	private Session session;
-	private String channel;
+	private String  channel;
 
     public WebSocketSupport() {}
 
@@ -41,8 +38,7 @@ public class WebSocketSupport {
     public void start(Session session) {
         this.session = session;
         connections.add(this);
-        log.debug("WebSocketSupport session started!");
-        System.out.println("WebSocketSupport session started!");
+        log.filter(l -> l.debug("Java: WebSocketSupport session started!", null));
     }
 
 
@@ -50,8 +46,7 @@ public class WebSocketSupport {
     public void end() {
         connections.remove(this);
         websocketRemovedNotifier.notifyObservers(this);
-        log.debug("WebSocketSupport session ended! ");
-        System.out.println("WebSocketSupport session ended! ");
+        log.filter(l -> l.debug("Java: WebSocketSupport session ended! ", null));
     }
 
 
@@ -63,9 +58,7 @@ public class WebSocketSupport {
 
     @OnError
     public void onError(Throwable t) throws Throwable {
-        log.error("WebSocketSupport Error: " + t.toString(), t);
-        System.out.println("WebSocketSupport Error: " + t.toString());
-        t.printStackTrace();
+        log.filter(l -> l.error("Java: WebSocketSupport Error: ", t));
     }
     
     public Session getSession() {
@@ -77,16 +70,15 @@ public class WebSocketSupport {
     }
     
     public static boolean chat(WebSocketSupport client, String msg) {
-    	System.out.println("Chat request made, " + msg);
+        log.filter(l -> l.debug("Java: Chat request made, " + msg, null));
+
     	boolean success = true;
     	try {
             synchronized (client) {
                 client.getSession().getBasicRemote().sendText(msg);
             }
     	} catch (IOException e) {
-            log.error("WebSocketSupport Error: Failed to send message to client", e);
-            System.out.println("WebSocketSupport Error: Failed to send message to client");
-            e.printStackTrace();
+            log.filter(l -> l.error("Java: WebSocketSupport Error: Failed to send message to client", e));
             connections.remove(client);
             websocketRemovedNotifier.notifyObservers();
             success = false;
@@ -96,7 +88,6 @@ public class WebSocketSupport {
                 // Ignore
             }
     	}
-        	System.out.println("Chat request success? " + success);
             return success;
     }
     
@@ -123,9 +114,7 @@ public class WebSocketSupport {
                     client.session.getBasicRemote().sendText(msg);
                 }
             } catch (IOException e) {
-                log.error("WebSocketSupport Error: Failed to send message to client", e);
-                System.out.println("WebSocketSupport Error: Failed to send message to client");
-                e.printStackTrace();
+                log.filter(l -> l.error("Java: WebSocketSupport Error: Failed to send message to client", e));
                 connections.remove(client);
                 removed++;
                 websocketRemovedNotifier.notifyObservers();
@@ -147,13 +136,18 @@ public class WebSocketSupport {
     public static WebSocketRemovedObserver getWebSocketRemovedNotifier() {
     	return websocketRemovedNotifier;
     }
+    
+    public static void setLogger(RailsLogging r) {
+    	//r is a plain old ruby object
+    	log = Optional.ofNullable(r);
+    }
 
 	public String getChannel() {
 		return channel;
 	}
 
 	public void setChannel(String channel) {
-		System.out.println("My channel has been set to " + channel);
+        log.filter(l -> l.debug("Java: My channel (" + this + ") has been set to " + channel, null));
 		this.channel = channel;
 	}
 
@@ -163,7 +157,7 @@ public class WebSocketSupport {
 		public void notifyObservers(Object o) {
     		setChanged();
     		super.notifyObservers(o);
-    		System.out.println("IncomingMessageObserver notified!");
+            log.filter(l -> l.debug("Java: IncomingMessageObserver notified!", null));
     	}
     }
 	
@@ -173,7 +167,7 @@ public class WebSocketSupport {
 		public void notifyObservers(Object o) {
     		setChanged();
     		super.notifyObservers(o);
-    		System.out.println("WebSocketRemovedObserver notified!");
+            log.filter(l -> l.debug("Java: WebSocketRemovedObserver notified!", null));
     	}
     }
 	
@@ -184,7 +178,7 @@ public class WebSocketSupport {
 		public MessageHolder(WebSocketSupport s, String msg) {
 			this.session = s;
 			this.message = msg;
-			System.out.println("Message holder built with " + msg);
+            log.filter(l -> l.debug("Java: Message holder built with " + msg, null));
 		}
 
 		public WebSocketSupport getWebSocketSupport() {
@@ -196,9 +190,7 @@ public class WebSocketSupport {
 		}
 	
 		public boolean chat(String msg) {
-			System.out.println("I am responding with this chat back:");
-			System.out.println(msg);
-			System.out.println("--------------------------------------");
+            log.filter(l -> l.debug("Java: Chatting " + msg, null));
 			return WebSocketSupport.chat(getWebSocketSupport(), msg);
 		}
 
