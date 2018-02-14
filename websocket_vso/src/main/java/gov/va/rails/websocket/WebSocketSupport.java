@@ -30,7 +30,7 @@ public class WebSocketSupport {
     private static final WebSocketRemovedObserver websocketRemovedNotifier = new WebSocketRemovedObserver();
 
 	private Session session;
-	private String  channel;
+	private String  initialData;
 
     public WebSocketSupport() {}
 
@@ -135,20 +135,20 @@ public class WebSocketSupport {
     
     public static WebSocketRemovedObserver getWebSocketRemovedNotifier() {
     	return websocketRemovedNotifier;
-    }
-    
+    }//
+   
     public static void setLogger(RailsLogging r) {
     	//r is a plain old ruby object
     	log = Optional.ofNullable(r);
     }
 
-	public String getChannel() {
-		return channel;
+	public String getInitialData() {
+		return initialData;
 	}
 
-	public void setChannel(String channel) {
+	public void setInitialData(String channel) {
         log.filter(l -> l.debug("Java: My channel (" + this + ") has been set to " + channel, null));
-		this.channel = channel;
+		this.initialData = channel;
 	}
 
 	public static class IncomingMessageObserver extends Observable {
