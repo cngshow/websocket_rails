@@ -1,11 +1,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>gov.vha.vso.gui.java</groupId>
-	<artifactId>websocket_vso</artifactId>
+	<groupId>gov.vha.drc.gui.java</groupId>
+	<artifactId>websocket_rails</artifactId>
 	<version>1.00-SNAPSHOT</version>
-	<name>Java VSO</name>
-	<description>This project supports Ruby on Rails web GUI for VSO
+	<name>Java DRC</name>
+	<description>This project supports Ruby on Rails web GUI for DRC
 </description>
 	<dependencies>
 		<dependency>

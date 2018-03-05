@@ -15,17 +15,17 @@ import javax.websocket.server.ServerEndpoint;
 
 @ServerEndpoint(value = WebSocketSupport.END_POINT)
 public class WebSocketSupport {
-	
+
 	static{
 		System.out.println("Rails has WebSocketSupport at: " + WebSocketSupport.END_POINT);
 	}
 
-	public static final String END_POINT = "/websocket/rails"; 
-	
+	public static final String END_POINT = "/websocket/rails";
+
     private static Optional<RailsLogging> log = Optional.empty();
 
     private static final Set<WebSocketSupport> connections = new CopyOnWriteArraySet<>();
-    
+
     private static final IncomingMessageObserver messageNotifier = new IncomingMessageObserver();
     private static final WebSocketRemovedObserver websocketRemovedNotifier = new WebSocketRemovedObserver();
 
@@ -60,15 +60,15 @@ public class WebSocketSupport {
     public void onError(Throwable t) throws Throwable {
         log.filter(l -> l.error("Java: WebSocketSupport Error: ", t));
     }
-    
+
     public Session getSession() {
 		return session;
 	}
-    
+
     public boolean isPresent() {
     	return connections.contains(this);
     }
-    
+
     public static boolean chat(WebSocketSupport client, String msg) {
         log.filter(l -> l.debug("Java: Chat request made, " + msg, null));
 
@@ -90,7 +90,7 @@ public class WebSocketSupport {
     	}
             return success;
     }
-    
+
     public static void remove(WebSocketSupport ws) {
         connections.remove(ws);
         try {
@@ -128,15 +128,15 @@ public class WebSocketSupport {
         }
         return removed;
     }
-    
+
     public static IncomingMessageObserver getMessageNotifier() {
 		return messageNotifier;
 	}
-    
+
     public static WebSocketRemovedObserver getWebSocketRemovedNotifier() {
     	return websocketRemovedNotifier;
     }//
-   
+
     public static void setLogger(RailsLogging r) {
     	//r is a plain old ruby object
     	log = Optional.ofNullable(r);
@@ -152,7 +152,7 @@ public class WebSocketSupport {
 	}
 
 	public static class IncomingMessageObserver extends Observable {
-    	
+
 		@Override
 		public void notifyObservers(Object o) {
     		setChanged();
@@ -160,9 +160,9 @@ public class WebSocketSupport {
             log.filter(l -> l.debug("Java: IncomingMessageObserver notified!", null));
     	}
     }
-	
+
 	public static class WebSocketRemovedObserver extends Observable {
-    	
+
 		@Override
 		public void notifyObservers(Object o) {
     		setChanged();
@@ -170,7 +170,7 @@ public class WebSocketSupport {
             log.filter(l -> l.debug("Java: WebSocketRemovedObserver notified!", null));
     	}
     }
-	
+
 	public static class MessageHolder {
 		private WebSocketSupport session;
 		private String message;
@@ -188,7 +188,7 @@ public class WebSocketSupport {
 		public String getMessage() {
 			return message;
 		}
-	
+
 		public boolean chat(String msg) {
             log.filter(l -> l.debug("Java: Chatting " + msg, null));
 			return WebSocketSupport.chat(getWebSocketSupport(), msg);
